@@ -1,0 +1,59 @@
+#!/usr/bin/env python2
+
+from __future__ import print_function
+import itertools
+import bencode
+import sys
+import os.path
+from datetime import datetime
+from math import log
+
+unit_list = zip(['bytes', 'kB', 'MB', 'GB', 'TB', 'PB'], [0, 0, 1, 2, 2, 2])
+
+
+def sizeof_fmt(num):
+    """Human friendly file size"""
+    if num > 1:
+        exponent = min(int(log(num, 1024)), len(unit_list) - 1)
+        quotient = float(num) / 1024**exponent
+        unit, num_decimals = unit_list[exponent]
+        format_string = '{:.%sf} {}' % (num_decimals)
+        return format_string.format(quotient, unit)
+    if num == 0:
+        return '0 bytes'
+    if num == 1:
+        return '1 byte'
+
+with open(sys.argv[1]) as f:
+    a = f.read()
+a = bencode.bdecode(a)
+
+# Info fields
+b = a['info']
+print('Name: {}'.format(b['name']))
+# Multi file
+if 'files' in b:
+    total = 0
+    print('Files:')
+    for f in b['files']:
+        print(os.path.join(*f['path']))
+        print('    ' + sizeof_fmt(f['length']))
+        total += f['length']
+    print('Total length: {}'.format(sizeof_fmt(total)))
+# Single file
+else:
+    print('Length: {}'.format(sizeof_fmt(b['length'])))
+
+# Optional fields
+if 'announce' in a:
+    print('Announce: {}'.format(a['announce']))
+if 'announce-list' in a:
+    print('Announce-list:')
+    print('\n'.join(itertools.chain(*a['announce-list'])))
+if 'creation date' in a:
+    print('Creation Date: {}'.format(datetime.utcfromtimestamp(
+        a['creation date'])))
+if 'created by' in a:
+    print('Created by: {}'.format(a['created by']))
+if 'comment' in a:
+    print('Comment: {}'.format(a['comment']))
