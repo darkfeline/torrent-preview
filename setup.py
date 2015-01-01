@@ -6,8 +6,8 @@ setup(
     name='torrent-preview',
     version='1.0',
     author='Allen Li',
-    author_email='darkfeline@abagofapples.com',
+    author_email='darkfeline@felesatra.moe',
     requires=['bencode(>=1.0)'],
-    url='http://abagofapples.com/',
+    url='http://felesatra.moe/',
     scripts=['torrent-preview'],
 )
